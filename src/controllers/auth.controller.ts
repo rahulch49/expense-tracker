@@ -17,7 +17,6 @@ export const signup = async (req: FastifyRequest<{ Body: SignupBody }>, reply: F
                 password
             }
         });
-        console.log('user-->>', newUser);
         return {
         message: "Signup route hit!"
     }
