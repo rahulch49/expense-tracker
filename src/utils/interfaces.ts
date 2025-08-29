@@ -4,3 +4,8 @@ export interface SignupBody {
     phone: string,
     password: string,
 }
+
+export interface LoginBody {
+    email: string,
+    password: string,
+}
