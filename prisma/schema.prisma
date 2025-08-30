@@ -15,7 +15,7 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String         @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   email     String   @unique
   phone     String?
@@ -27,32 +27,33 @@ model User {
   updatedExpenses Expense[]      @relation("ExpenseUpdatedBy")
   createdGroups   Group[]
   groupMembers    GroupMembers[]
+  token           Token[]
 }
 
 model Expense {
-  id          Int      @id @default(autoincrement())
+  id          String         @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String
   amount      Float
-  groupId     Int
-  group       Group    @relation(fields: [groupId], references: [id])
+  groupId     String         @db.Uuid
+  group       Group          @relation(fields: [groupId], references: [id])
   description String?
   category    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
-  createdBy Int
-  updatedBy Int
-  creator   User @relation("ExpenseCreatedBy", fields: [createdBy], references: [id])
-  updator   User @relation("ExpenseUpdatedBy", fields: [updatedBy], references: [id])
+  createdBy   String         @db.Uuid
+  updatedBy   String         @db.Uuid
+  creator     User           @relation("ExpenseCreatedBy", fields: [createdBy], references: [id])
+  updator     User           @relation("ExpenseUpdatedBy", fields: [updatedBy], references: [id])
 }
 
 model Group {
-  id        Int      @id @default(autoincrement())
+  id        String          @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy Int
-  isDeleted Boolean  @default(false)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  createdBy String          @db.Uuid
+  isDeleted Boolean         @default(false)
 
   user         User           @relation(fields: [createdBy], references: [id])
   groupMembers GroupMembers[]
@@ -60,11 +61,21 @@ model Group {
 }
 
 model GroupMembers {
-  id        Int      @id @default(autoincrement())
-  groupId   Int
-  userId    Int
+  id        String          @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  groupId   String          @db.Uuid
+  userId    String          @db.Uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
   group     Group    @relation(fields: [groupId], references: [id])
+}
+
+model Token {
+  id            String        @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String        @db.Uuid
+  refreshToken  String        @unique
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  user          User          @relation(fields: [userId], references: [id])
 }
