@@ -1,9 +1,11 @@
 import fastify from "fastify";
+import fastifyCookie from "@fastify/cookie";
 import { authRoutes } from "./routes/auth.router.js";
 
 const app = fastify();
 
 app.register(authRoutes, { prefix: "/auth" });
+app.register(fastifyCookie);
 
 app.get("/", async () => {
   return { message: "Hello from Expense Tracker " };
