@@ -28,16 +28,14 @@ export const login = async (
         return reply.code(ERROR401.statusCode).send({ message: 'Invalid credentials!' });
     }
     const payload = {
-        email: userDetails?.email,
+        name: userDetails?.name,
         userId: userDetails?.id,
     }
-    const secret = ACCESS_TOKEN_SECRET;
-    const refreshSecret = REFRESH_TOKEN_SECRET;
-    if(!secret || !refreshSecret){
+    if (!ACCESS_TOKEN_SECRET || !REFRESH_TOKEN_SECRET){
         return reply.code(ERROR500.statusCode).send({ message: 'Something went wrong!' });
     }
-    const accessToken = jsonwebtoken.sign(payload, secret, { expiresIn: "15m" });
-    const refreshToken = jsonwebtoken.sign(payload, refreshSecret, { expiresIn: "7d" });
+    const accessToken = jsonwebtoken.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+    const refreshToken = jsonwebtoken.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
     if (refreshToken){
         const token = await prisma.token.create({
             data: {
