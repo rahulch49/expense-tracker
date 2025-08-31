@@ -28,23 +28,26 @@ model User {
   createdGroups   Group[]
   groupMembers    GroupMembers[]
   token           Token[]
+  expenseParticipant  ExpenseParticipant[]
 }
 
 model Expense {
-  id          String         @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String
-  amount      Float
-  groupId     String         @db.Uuid
-  group       Group          @relation(fields: [groupId], references: [id])
-  description String?
-  category    String
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id                String         @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  amount            Float
+  groupId           String         @db.Uuid
+  group             Group          @relation(fields: [groupId], references: [id])
+  description       String?
+  category          String
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  isDeleted         Boolean       @default(false)
 
-  createdBy   String         @db.Uuid
-  updatedBy   String         @db.Uuid
-  creator     User           @relation("ExpenseCreatedBy", fields: [createdBy], references: [id])
-  updator     User           @relation("ExpenseUpdatedBy", fields: [updatedBy], references: [id])
+  createdBy         String         @db.Uuid
+  updatedBy         String         @db.Uuid
+  creator           User           @relation("ExpenseCreatedBy", fields: [createdBy], references: [id])
+  updator           User           @relation("ExpenseUpdatedBy", fields: [updatedBy], references: [id])
+  participants      ExpenseParticipant[]
 }
 
 model Group {
@@ -78,4 +81,17 @@ model Token {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   user          User          @relation(fields: [userId], references: [id])
+}
+
+model ExpenseParticipant {
+  id            String        @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expenseId     String        @db.Uuid
+  userId        String        @db.Uuid
+  owes          Float         @default(0.0)
+  paid          Float         @default(0.0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user          User          @relation(fields: [userId], references: [id])
+  expense       Expense       @relation(fields: [expenseId], references: [id])
 }
