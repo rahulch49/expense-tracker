@@ -3,6 +3,13 @@
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+enum ExpenseCategory {
+    FOOD
+    SHOPPING
+    FUEL
+    RENT
+    OTHER
+}
 
 generator client {
   provider = "prisma-client-js"
@@ -13,6 +20,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 
 model User {
   id        String         @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -29,6 +37,8 @@ model User {
   groupMembers    GroupMembers[]
   token           Token[]
   expenseParticipant  ExpenseParticipant[]
+  settlementsPaid     Settlement[]  @relation("PaidBy")
+  settlementsReceived Settlement[]  @relation("PaidTo")
 }
 
 model Expense {
@@ -38,7 +48,7 @@ model Expense {
   groupId           String         @db.Uuid
   group             Group          @relation(fields: [groupId], references: [id])
   description       String?
-  category          String
+  category          ExpenseCategory
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   isDeleted         Boolean       @default(false)
@@ -61,12 +71,14 @@ model Group {
   user         User           @relation(fields: [createdBy], references: [id])
   groupMembers GroupMembers[]
   expenses     Expense[]
+  settlements  Settlement[]
 }
 
 model GroupMembers {
   id        String          @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   groupId   String          @db.Uuid
   userId    String          @db.Uuid
+  isDeleted Boolean         @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
@@ -91,7 +103,22 @@ model ExpenseParticipant {
   paid          Float         @default(0.0)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  isDeleted     Boolean       @default(false)
 
   user          User          @relation(fields: [userId], references: [id])
   expense       Expense       @relation(fields: [expenseId], references: [id])
+}
+
+model Settlement {
+  id            String            @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  groupId       String            @db.Uuid
+  paidBy        String            @db.Uuid
+  paidTo        String            @db.Uuid
+  amountPaid    Float
+  createdAt     DateTime          @default(now())
+
+  group         Group             @relation(fields: [groupId], references: [id])
+  payer         User              @relation("PaidBy", fields: [paidBy], references: [id])
+  receiver      User              @relation("PaidTo", fields: [paidTo], references: [id])
+
 }
